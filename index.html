@@ -234,6 +234,53 @@
             margin-top: 0.3rem;
         }
 
+        .round-end {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .round-end h2 {
+            color: #3d7c47;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .round-end .final-score {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #c0732a;
+            margin: 0.5rem 0;
+        }
+
+        .round-end .final-msg {
+            font-size: 1rem;
+            color: #5c4a32;
+            margin-bottom: 1rem;
+        }
+
+        .round-end .final-details {
+            font-size: 0.9rem;
+            color: #7a9a5a;
+            margin-bottom: 1.2rem;
+        }
+
+        .play-again-btn {
+            background: #3d7c47;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 2rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .play-again-btn:hover {
+            background: #2d5a33;
+        }
+
         .npc-badge {
             display: inline-block;
             background: #ffeaa7;
@@ -270,9 +317,9 @@
         </div>
 
         <div class="score-bar">
-            <div>Score: <span id="score">0</span>/<span id="total">0</span></div>
+            <div>Q: <span id="qnum">1</span>/10</div>
+            <div>Score: <span id="score">0</span></div>
             <div>Streak: <span id="streak">0</span></div>
-            <div>Best: <span id="best">0</span></div>
         </div>
 
         <div class="mode-select">
@@ -756,11 +803,12 @@ const wrongMessages = [
     "Almost!"
 ];
 
+const ROUND_LENGTH = 10;
 let currentMode = 'mix';
 let score = 0;
 let total = 0;
 let streak = 0;
-let best = 0;
+let bestStreak = 0;
 let answered = false;
 
 function shuffle(arr) {
@@ -785,7 +833,40 @@ function setMode(mode) {
     currentMode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
     event.target.closest('.mode-btn').classList.add('active');
+    startRound();
+}
+
+function startRound() {
+    score = 0;
+    total = 0;
+    streak = 0;
+    bestStreak = 0;
+    document.getElementById('score').textContent = 0;
+    document.getElementById('streak').textContent = 0;
+    document.getElementById('qnum').textContent = 1;
     nextQuestion();
+}
+
+function showRoundEnd() {
+    const pct = Math.round((score / ROUND_LENGTH) * 100);
+    let msg, emoji;
+    if (pct === 100) { msg = "Perfect score! You're an island legend!"; emoji = "🏆"; }
+    else if (pct >= 80) { msg = "Amazing! Tom Nook would be impressed!"; emoji = "🌟"; }
+    else if (pct >= 60) { msg = "Nice work! Keep exploring the island!"; emoji = "🍃"; }
+    else if (pct >= 40) { msg = "Not bad! You're learning!"; emoji = "🌱"; }
+    else { msg = "Keep playing, you'll get there!"; emoji = "💪"; }
+
+    const card = document.querySelector('.question-card');
+    card.innerHTML = `
+        <div class="round-end">
+            <h2>${emoji} Round Complete!</h2>
+            <div class="final-score">${score}/${ROUND_LENGTH}</div>
+            <div class="final-msg">${msg}</div>
+            <div class="final-details">Best streak: ${bestStreak}</div>
+            <button class="play-again-btn" onclick="startRound()">Play Again</button>
+        </div>
+    `;
+    document.getElementById('streak-msg').textContent = '';
 }
 
 function generateSpeciesQuestion() {
@@ -893,19 +974,29 @@ function generateQuestion() {
 }
 
 function nextQuestion() {
+    if (total >= ROUND_LENGTH) {
+        showRoundEnd();
+        return;
+    }
     answered = false;
     const q = generateQuestion();
 
+    // Rebuild card contents in case we're coming back from round-end screen
+    const card = document.querySelector('.question-card');
+    card.innerHTML = `
+        <div class="question-label" id="q-label"></div>
+        <div class="question-text" id="q-text"></div>
+        <div class="options" id="options"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+    `;
+
     document.getElementById('q-label').textContent = q.label;
     document.getElementById('q-text').innerHTML = q.text;
-    document.getElementById('feedback').className = 'feedback';
-    document.getElementById('feedback').textContent = '';
-    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('qnum').textContent = total + 1;
     document.getElementById('streak-msg').textContent = '';
 
     const optionsDiv = document.getElementById('options');
-    optionsDiv.innerHTML = '';
-
     q.options.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
@@ -934,7 +1025,7 @@ function handleAnswer(btn, selected, q) {
     if (isCorrect) {
         score++;
         streak++;
-        if (streak > best) best = streak;
+        if (streak > bestStreak) bestStreak = streak;
         btn.classList.add('correct');
         feedback.className = 'feedback correct';
         feedback.innerHTML = pickRandom(correctMessages);
@@ -948,10 +1039,10 @@ function handleAnswer(btn, selected, q) {
     }
 
     document.getElementById('score').textContent = score;
-    document.getElementById('total').textContent = total;
     document.getElementById('streak').textContent = streak;
-    document.getElementById('best').textContent = best;
-    document.getElementById('next-btn').style.display = 'block';
+    const nextBtn = document.getElementById('next-btn');
+    nextBtn.style.display = 'block';
+    nextBtn.textContent = total >= ROUND_LENGTH ? 'See Results 🎉' : 'Next Question →';
 
     if (streak >= 5) {
         const msgs = ["You're on fire!", "Unstoppable!", "Amazing streak!", "Keep going!", "Incredible run!"];
@@ -961,8 +1052,8 @@ function handleAnswer(btn, selected, q) {
     }
 }
 
-// Start with first question
-nextQuestion();
+// Start first round
+startRound();
     </script>
 </body>
 </html>
