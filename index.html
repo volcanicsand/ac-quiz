@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Crossing: New Horizons Quiz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #e8f5e2;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(167, 219, 167, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(135, 206, 235, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(255, 218, 185, 0.3) 0%, transparent 50%);
+            min-height: 100vh;
+            color: #5c4a32;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            text-align: center;
+            padding: 1.5rem 0 1rem;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #3d7c47;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+            line-height: 1.2;
+        }
+
+        .header .leaf {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .header .subtitle {
+            font-size: 0.9rem;
+            color: #7a9a5a;
+            margin-top: 0.3rem;
+        }
+
+        .score-bar {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255,255,255,0.7);
+            border-radius: 20px;
+            padding: 0.6rem 1rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 2px solid rgba(61,124,71,0.15);
+        }
+
+        .score-bar span {
+            color: #3d7c47;
+        }
+
+        .mode-select {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .mode-btn {
+            background: rgba(255,255,255,0.8);
+            border: 2px solid rgba(61,124,71,0.2);
+            border-radius: 12px;
+            padding: 0.7rem 0.5rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: #5c4a32;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .mode-btn:hover {
+            background: rgba(255,255,255,1);
+            border-color: #3d7c47;
+            transform: translateY(-1px);
+        }
+
+        .mode-btn.active {
+            background: #3d7c47;
+            color: white;
+            border-color: #3d7c47;
+        }
+
+        .mode-btn .mode-icon {
+            display: block;
+            font-size: 1.3rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .question-card {
+            background: rgba(255,255,255,0.85);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 2px solid rgba(61,124,71,0.12);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .question-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #7a9a5a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .question-text {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #3d5a28;
+            line-height: 1.4;
+            margin-bottom: 1.2rem;
+        }
+
+        .question-text .highlight {
+            color: #c0732a;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .option-btn {
+            background: #f0f7ec;
+            border: 2px solid rgba(61,124,71,0.15);
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #5c4a32;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            background: #e0efda;
+            border-color: #3d7c47;
+            transform: translateX(4px);
+        }
+
+        .option-btn.correct {
+            background: #c8e6c0;
+            border-color: #3d7c47;
+            color: #2d5a1e;
+        }
+
+        .option-btn.wrong {
+            background: #f5d0c0;
+            border-color: #c0732a;
+            color: #8b4513;
+        }
+
+        .option-btn.disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .option-btn.reveal {
+            border-color: #3d7c47;
+            border-style: dashed;
+        }
+
+        .feedback {
+            text-align: center;
+            padding: 1rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .feedback.correct {
+            display: block;
+            background: #d4edda;
+            color: #2d5a1e;
+        }
+
+        .feedback.wrong {
+            display: block;
+            background: #fde8e0;
+            color: #8b4513;
+        }
+
+        .next-btn {
+            display: none;
+            width: 100%;
+            background: #3d7c47;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            cursor: pointer;
+            margin-top: 0.8rem;
+            transition: background 0.2s;
+        }
+
+        .next-btn:hover {
+            background: #2d5a33;
+        }
+
+        .streak-display {
+            text-align: center;
+            font-size: 0.85rem;
+            color: #7a9a5a;
+            font-weight: 600;
+            margin-top: 0.3rem;
+        }
+
+        .npc-badge {
+            display: inline-block;
+            background: #ffeaa7;
+            color: #8b6914;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.5rem;
+            border-radius: 8px;
+            margin-left: 0.3rem;
+            vertical-align: middle;
+        }
+
+        .fun-fact {
+            font-size: 0.85rem;
+            color: #7a9a5a;
+            font-style: italic;
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+
+        @media (max-width: 400px) {
+            .header h1 { font-size: 1.3rem; }
+            .question-text { font-size: 1.05rem; }
+            .option-btn { font-size: 0.9rem; padding: 0.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="leaf">🍃</span>
+            <h1>Animal Crossing<br>New Horizons Quiz</h1>
+            <div class="subtitle">How well do you know your villagers?</div>
+        </div>
+
+        <div class="score-bar">
+            <div>Score: <span id="score">0</span>/<span id="total">0</span></div>
+            <div>Streak: <span id="streak">0</span></div>
+            <div>Best: <span id="best">0</span></div>
+        </div>
+
+        <div class="mode-select">
+            <button class="mode-btn active" onclick="setMode('mix')">
+                <span class="mode-icon">🎲</span>Random Mix
+            </button>
+            <button class="mode-btn" onclick="setMode('species')">
+                <span class="mode-icon">🐱</span>Guess Species
+            </button>
+            <button class="mode-btn" onclick="setMode('personality')">
+                <span class="mode-icon">💬</span>Guess Personality
+            </button>
+            <button class="mode-btn" onclick="setMode('catchphrase')">
+                <span class="mode-icon">🗨️</span>Catchphrase
+            </button>
+            <button class="mode-btn" onclick="setMode('whoareyou')">
+                <span class="mode-icon">❓</span>Who Am I?
+            </button>
+            <button class="mode-btn" onclick="setMode('npc')">
+                <span class="mode-icon">⭐</span>Special NPCs
+            </button>
+        </div>
+
+        <div class="question-card">
+            <div class="question-label" id="q-label">Question</div>
+            <div class="question-text" id="q-text">Pick a mode to start!</div>
+            <div class="options" id="options"></div>
+            <div class="feedback" id="feedback"></div>
+            <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+        </div>
+        <div class="streak-display" id="streak-msg"></div>
+    </div>
+
+    <script>
+const villagers = [
+    {n:"Ace",s:"Bird",p:"Jock",c:"ace"},
+    {n:"Admiral",s:"Bird",p:"Cranky",c:"aye aye"},
+    {n:"Agent S",s:"Squirrel",p:"Peppy",c:"sidekick"},
+    {n:"Agnes",s:"Pig",p:"Sisterly",c:"snuffle"},
+    {n:"Al",s:"Gorilla",p:"Lazy",c:"ayyyeee"},
+    {n:"Alfonso",s:"Alligator",p:"Lazy",c:"it'sa me"},
+    {n:"Alice",s:"Koala",p:"Normal",c:"guvnor"},
+    {n:"Alli",s:"Alligator",p:"Snooty",c:"graaagh"},
+    {n:"Amelia",s:"Eagle",p:"Snooty",c:"cuz"},
+    {n:"Anabelle",s:"Anteater",p:"Peppy",c:"snorty"},
+    {n:"Anchovy",s:"Bird",p:"Lazy",c:"chuurp"},
+    {n:"Angus",s:"Bull",p:"Cranky",c:"macmoo"},
+    {n:"Anicotti",s:"Mouse",p:"Peppy",c:"cannoli"},
+    {n:"Ankha",s:"Cat",p:"Snooty",c:"me meow"},
+    {n:"Annalisa",s:"Anteater",p:"Normal",c:"gumdrop"},
+    {n:"Annalise",s:"Horse",p:"Snooty",c:"nipper"},
+    {n:"Antonio",s:"Anteater",p:"Jock",c:"honk"},
+    {n:"Apollo",s:"Eagle",p:"Cranky",c:"pah"},
+    {n:"Apple",s:"Hamster",p:"Peppy",c:"cheekers"},
+    {n:"Astrid",s:"Kangaroo",p:"Snooty",c:"my pet"},
+    {n:"Audie",s:"Wolf",p:"Peppy",c:"foxtrot"},
+    {n:"Aurora",s:"Penguin",p:"Normal",c:"b-b-baby"},
+    {n:"Ava",s:"Chicken",p:"Normal",c:"beaker"},
+    {n:"Avery",s:"Eagle",p:"Cranky",c:"skree-haw"},
+    {n:"Axel",s:"Elephant",p:"Jock",c:"WHONK"},
+    {n:"Azalea",s:"Rhino",p:"Snooty",c:"merci"},
+    {n:"Baabara",s:"Sheep",p:"Snooty",c:"daahling"},
+    {n:"Bam",s:"Deer",p:"Jock",c:"kablang"},
+    {n:"Bangle",s:"Tiger",p:"Peppy",c:"growf"},
+    {n:"Barold",s:"Cub",p:"Lazy",c:"cubby"},
+    {n:"Bea",s:"Dog",p:"Normal",c:"bingo"},
+    {n:"Beardo",s:"Bear",p:"Smug",c:"whiskers"},
+    {n:"Beau",s:"Deer",p:"Lazy",c:"saltlick"},
+    {n:"Becky",s:"Chicken",p:"Snooty",c:"chicklet"},
+    {n:"Bella",s:"Mouse",p:"Peppy",c:"eeks"},
+    {n:"Benedict",s:"Chicken",p:"Lazy",c:"uh-hoo"},
+    {n:"Benjamin",s:"Dog",p:"Lazy",c:"alrighty"},
+    {n:"Bertha",s:"Hippo",p:"Normal",c:"bloop"},
+    {n:"Bettina",s:"Mouse",p:"Normal",c:"eekers"},
+    {n:"Bianca",s:"Tiger",p:"Peppy",c:"glimmer"},
+    {n:"Biff",s:"Hippo",p:"Jock",c:"squirt"},
+    {n:"Big Top",s:"Elephant",p:"Lazy",c:"villain"},
+    {n:"Bill",s:"Duck",p:"Jock",c:"quacko"},
+    {n:"Billy",s:"Goat",p:"Jock",c:"dagnaabit"},
+    {n:"Biskit",s:"Dog",p:"Lazy",c:"dawg"},
+    {n:"Bitty",s:"Hippo",p:"Snooty",c:"my dear"},
+    {n:"Blaire",s:"Squirrel",p:"Snooty",c:"nutlet"},
+    {n:"Blanche",s:"Ostrich",p:"Snooty",c:"quite so"},
+    {n:"Bluebear",s:"Cub",p:"Peppy",c:"peach"},
+    {n:"Bob",s:"Cat",p:"Lazy",c:"pthhpth"},
+    {n:"Bonbon",s:"Rabbit",p:"Peppy",c:"deelish"},
+    {n:"Bones",s:"Dog",p:"Lazy",c:"yip yip"},
+    {n:"Boomer",s:"Penguin",p:"Lazy",c:"human"},
+    {n:"Boone",s:"Gorilla",p:"Jock",c:"baboom"},
+    {n:"Boots",s:"Alligator",p:"Jock",c:"munchie"},
+    {n:"Boris",s:"Pig",p:"Cranky",c:"schnort"},
+    {n:"Boyd",s:"Gorilla",p:"Cranky",c:"uh-oh"},
+    {n:"Bree",s:"Mouse",p:"Snooty",c:"cheeseball"},
+    {n:"Broccolo",s:"Mouse",p:"Lazy",c:"eat it"},
+    {n:"Broffina",s:"Chicken",p:"Snooty",c:"cluckadoo"},
+    {n:"Bruce",s:"Deer",p:"Cranky",c:"gruff"},
+    {n:"Bubbles",s:"Hippo",p:"Peppy",c:"hipster"},
+    {n:"Buck",s:"Horse",p:"Jock",c:"pardner"},
+    {n:"Bud",s:"Lion",p:"Jock",c:"shredded"},
+    {n:"Bunnie",s:"Rabbit",p:"Peppy",c:"tee-hee"},
+    {n:"Butch",s:"Dog",p:"Cranky",c:"ROOOOOWF"},
+    {n:"Buzz",s:"Eagle",p:"Cranky",c:"captain"},
+    {n:"Cally",s:"Squirrel",p:"Normal",c:"WHEE"},
+    {n:"Camofrog",s:"Frog",p:"Cranky",c:"ten-hut"},
+    {n:"Canberra",s:"Koala",p:"Sisterly",c:"nuh uh"},
+    {n:"Candi",s:"Mouse",p:"Peppy",c:"sweetie"},
+    {n:"Carmen",s:"Rabbit",p:"Peppy",c:"nougat"},
+    {n:"Caroline",s:"Squirrel",p:"Normal",c:"hulaaaa"},
+    {n:"Carrie",s:"Kangaroo",p:"Normal",c:"little one"},
+    {n:"Cashmere",s:"Sheep",p:"Snooty",c:"baaaby"},
+    {n:"Celia",s:"Eagle",p:"Normal",c:"feathers"},
+    {n:"Cephalobot",s:"Octopus",p:"Smug",c:"donk donk"},
+    {n:"Cesar",s:"Gorilla",p:"Cranky",c:"highness"},
+    {n:"Chadder",s:"Mouse",p:"Smug",c:"fromage"},
+    {n:"Charlise",s:"Bear",p:"Sisterly",c:"urgh"},
+    {n:"Chelsea",s:"Deer",p:"Normal",c:"pound cake"},
+    {n:"Cheri",s:"Cub",p:"Peppy",c:"tralala"},
+    {n:"Cherry",s:"Dog",p:"Sisterly",c:"what what"},
+    {n:"Chester",s:"Cub",p:"Lazy",c:"rookie"},
+    {n:"Chevre",s:"Goat",p:"Normal",c:"la baa"},
+    {n:"Chief",s:"Wolf",p:"Cranky",c:"harrumph"},
+    {n:"Chops",s:"Pig",p:"Smug",c:"zoink"},
+    {n:"Chow",s:"Bear",p:"Cranky",c:"aiya"},
+    {n:"Chrissy",s:"Rabbit",p:"Peppy",c:"sparkles"},
+    {n:"Claude",s:"Rabbit",p:"Lazy",c:"hopalong"},
+    {n:"Claudia",s:"Tiger",p:"Snooty",c:"ooh la la"},
+    {n:"Clay",s:"Hamster",p:"Lazy",c:"thump"},
+    {n:"Cleo",s:"Horse",p:"Snooty",c:"sugar"},
+    {n:"Clyde",s:"Horse",p:"Lazy",c:"clip clawp"},
+    {n:"Coach",s:"Bull",p:"Jock",c:"stubble"},
+    {n:"Cobb",s:"Pig",p:"Jock",c:"hot dog"},
+    {n:"Coco",s:"Rabbit",p:"Normal",c:"doyoing"},
+    {n:"Cole",s:"Rabbit",p:"Lazy",c:"coooooool"},
+    {n:"Colton",s:"Horse",p:"Smug",c:"check it"},
+    {n:"Cookie",s:"Dog",p:"Peppy",c:"arfer"},
+    {n:"Cousteau",s:"Frog",p:"Jock",c:"oui oui"},
+    {n:"Cranston",s:"Ostrich",p:"Lazy",c:"sweatband"},
+    {n:"Croque",s:"Frog",p:"Cranky",c:"as if"},
+    {n:"Cube",s:"Penguin",p:"Lazy",c:"brainfreeze"},
+    {n:"Curlos",s:"Sheep",p:"Smug",c:"shearly"},
+    {n:"Curly",s:"Pig",p:"Jock",c:"nyoink"},
+    {n:"Curt",s:"Bear",p:"Cranky",c:"fuzzball"},
+    {n:"Cyd",s:"Elephant",p:"Cranky",c:"rockin'"},
+    {n:"Cyrano",s:"Anteater",p:"Cranky",c:"ah-CHOO"},
+    {n:"Daisy",s:"Dog",p:"Normal",c:"bow-WOW"},
+    {n:"Deena",s:"Duck",p:"Normal",c:"woowoo"},
+    {n:"Deirdre",s:"Deer",p:"Sisterly",c:"whatevs"},
+    {n:"Del",s:"Alligator",p:"Cranky",c:"gronk"},
+    {n:"Deli",s:"Monkey",p:"Lazy",c:"monch"},
+    {n:"Derwin",s:"Duck",p:"Lazy",c:"derrrr"},
+    {n:"Diana",s:"Deer",p:"Snooty",c:"no doy"},
+    {n:"Diva",s:"Frog",p:"Sisterly",c:"ya know"},
+    {n:"Dizzy",s:"Elephant",p:"Lazy",c:"woo-oo"},
+    {n:"Dobie",s:"Wolf",p:"Cranky",c:"ohmmm"},
+    {n:"Doc",s:"Rabbit",p:"Lazy",c:"old bunny"},
+    {n:"Dom",s:"Sheep",p:"Jock",c:"indeedaroo"},
+    {n:"Dora",s:"Mouse",p:"Normal",c:"squeaky"},
+    {n:"Dotty",s:"Rabbit",p:"Peppy",c:"wee one"},
+    {n:"Drago",s:"Alligator",p:"Lazy",c:"burrrn"},
+    {n:"Drake",s:"Duck",p:"Lazy",c:"quacko"},
+    {n:"Drift",s:"Frog",p:"Jock",c:"dribbit"},
+    {n:"Ed",s:"Horse",p:"Smug",c:"greenhorn"},
+    {n:"Egbert",s:"Chicken",p:"Lazy",c:"doodle-duh"},
+    {n:"Elise",s:"Monkey",p:"Snooty",c:"puh-lease"},
+    {n:"Ellie",s:"Elephant",p:"Normal",c:"li'l one"},
+    {n:"Elmer",s:"Horse",p:"Lazy",c:"tenderfoot"},
+    {n:"Eloise",s:"Elephant",p:"Snooty",c:"tooooot"},
+    {n:"Elvis",s:"Lion",p:"Cranky",c:"unh-hunh"},
+    {n:"Erik",s:"Deer",p:"Lazy",c:"chow down"},
+    {n:"Eugene",s:"Koala",p:"Smug",c:"yeah buddy"},
+    {n:"Eunice",s:"Sheep",p:"Normal",c:"lambchop"},
+    {n:"Faith",s:"Koala",p:"Sisterly",c:"aloha"},
+    {n:"Fang",s:"Wolf",p:"Cranky",c:"cha-chomp"},
+    {n:"Fauna",s:"Deer",p:"Normal",c:"dearie"},
+    {n:"Felicity",s:"Cat",p:"Peppy",c:"mimimi"},
+    {n:"Filbert",s:"Squirrel",p:"Lazy",c:"bucko"},
+    {n:"Flip",s:"Monkey",p:"Jock",c:"rerack"},
+    {n:"Flo",s:"Penguin",p:"Sisterly",c:"cha"},
+    {n:"Flora",s:"Ostrich",p:"Peppy",c:"pinky"},
+    {n:"Flurry",s:"Hamster",p:"Normal",c:"powderpuff"},
+    {n:"Francine",s:"Rabbit",p:"Snooty",c:"karat"},
+    {n:"Frank",s:"Eagle",p:"Cranky",c:"crushy"},
+    {n:"Freckles",s:"Duck",p:"Peppy",c:"ducky"},
+    {n:"Freya",s:"Wolf",p:"Snooty",c:"uff da"},
+    {n:"Friga",s:"Penguin",p:"Snooty",c:"brrrmph"},
+    {n:"Frita",s:"Sheep",p:"Sisterly",c:"oh ewe"},
+    {n:"Frobert",s:"Frog",p:"Jock",c:"fribbit"},
+    {n:"Fuchsia",s:"Deer",p:"Sisterly",c:"precious"},
+    {n:"Gabi",s:"Rabbit",p:"Peppy",c:"honeybun"},
+    {n:"Gala",s:"Pig",p:"Normal",c:"snortie"},
+    {n:"Gaston",s:"Rabbit",p:"Cranky",c:"mon chou"},
+    {n:"Gayle",s:"Alligator",p:"Normal",c:"snacky"},
+    {n:"Genji",s:"Rabbit",p:"Jock",c:"mochi"},
+    {n:"Gigi",s:"Frog",p:"Snooty",c:"ribbette"},
+    {n:"Gladys",s:"Ostrich",p:"Normal",c:"stretch"},
+    {n:"Gloria",s:"Duck",p:"Snooty",c:"quacker"},
+    {n:"Goldie",s:"Dog",p:"Normal",c:"woof"},
+    {n:"Gonzo",s:"Koala",p:"Cranky",c:"mate"},
+    {n:"Goose",s:"Chicken",p:"Jock",c:"buh-kay"},
+    {n:"Graham",s:"Hamster",p:"Smug",c:"indeed"},
+    {n:"Greta",s:"Mouse",p:"Snooty",c:"yelp"},
+    {n:"Grizzly",s:"Bear",p:"Cranky",c:"grrr"},
+    {n:"Groucho",s:"Bear",p:"Cranky",c:"grumble"},
+    {n:"Gruff",s:"Goat",p:"Cranky",c:"bleh eh eh"},
+    {n:"Gwen",s:"Penguin",p:"Snooty",c:"h-h-h-hon"},
+    {n:"Hamlet",s:"Hamster",p:"Jock",c:"hammie"},
+    {n:"Hamphrey",s:"Hamster",p:"Cranky",c:"snort"},
+    {n:"Hans",s:"Gorilla",p:"Smug",c:"groovy"},
+    {n:"Harry",s:"Hippo",p:"Cranky",c:"beach bum"},
+    {n:"Hazel",s:"Squirrel",p:"Sisterly",c:"uni-wow"},
+    {n:"Henry",s:"Frog",p:"Smug",c:"snoozit"},
+    {n:"Hippeux",s:"Hippo",p:"Smug",c:"natch"},
+    {n:"Hopkins",s:"Rabbit",p:"Lazy",c:"thumper"},
+    {n:"Hopper",s:"Penguin",p:"Cranky",c:"slushie"},
+    {n:"Hornsby",s:"Rhino",p:"Lazy",c:"schnozzle"},
+    {n:"Huck",s:"Frog",p:"Smug",c:"hopper"},
+    {n:"Hugh",s:"Pig",p:"Lazy",c:"snortle"},
+    {n:"Iggly",s:"Penguin",p:"Jock",c:"waddler"},
+    {n:"Ike",s:"Bear",p:"Cranky",c:"roadie"},
+    {n:"Ione",s:"Squirrel",p:"Normal",c:"gleam"},
+    {n:"Jacob",s:"Bird",p:"Lazy",c:"ya feel"},
+    {n:"Jacques",s:"Bird",p:"Smug",c:"zut alors"},
+    {n:"Jambette",s:"Frog",p:"Normal",c:"croak-kay"},
+    {n:"Jay",s:"Bird",p:"Jock",c:"heeeeeyy"},
+    {n:"Jeremiah",s:"Frog",p:"Lazy",c:"nee-deep"},
+    {n:"Jitters",s:"Bird",p:"Jock",c:"bzzert"},
+    {n:"Joey",s:"Duck",p:"Lazy",c:"bleeeeeck"},
+    {n:"Judy",s:"Cub",p:"Snooty",c:"myohmy"},
+    {n:"Julia",s:"Ostrich",p:"Snooty",c:"dahling"},
+    {n:"Julian",s:"Horse",p:"Smug",c:"glitter"},
+    {n:"June",s:"Cub",p:"Normal",c:"rainbow"},
+    {n:"Kabuki",s:"Cat",p:"Cranky",c:"meooo-OH"},
+    {n:"Katt",s:"Cat",p:"Sisterly",c:"purrty"},
+    {n:"Keaton",s:"Eagle",p:"Smug",c:"wingo"},
+    {n:"Ken",s:"Chicken",p:"Smug",c:"no doubt"},
+    {n:"Ketchup",s:"Duck",p:"Peppy",c:"bitty"},
+    {n:"Kevin",s:"Pig",p:"Jock",c:"weeweewee"},
+    {n:"Kid Cat",s:"Cat",p:"Jock",c:"psst"},
+    {n:"Kidd",s:"Goat",p:"Smug",c:"wut"},
+    {n:"Kiki",s:"Cat",p:"Normal",c:"kitty cat"},
+    {n:"Kitt",s:"Kangaroo",p:"Normal",c:"child"},
+    {n:"Kitty",s:"Cat",p:"Snooty",c:"mrowrr"},
+    {n:"Klaus",s:"Bear",p:"Smug",c:"strudel"},
+    {n:"Knox",s:"Chicken",p:"Cranky",c:"cluckling"},
+    {n:"Kody",s:"Cub",p:"Jock",c:"grah grah"},
+    {n:"Kyle",s:"Wolf",p:"Smug",c:"alpha"},
+    {n:"Leonardo",s:"Tiger",p:"Jock",c:"flexin'"},
+    {n:"Leopold",s:"Lion",p:"Smug",c:"lion cub"},
+    {n:"Lily",s:"Frog",p:"Normal",c:"toady"},
+    {n:"Limberg",s:"Mouse",p:"Cranky",c:"squinky"},
+    {n:"Lionel",s:"Lion",p:"Smug",c:"precisely"},
+    {n:"Lobo",s:"Wolf",p:"Cranky",c:"ah-rooooo"},
+    {n:"Lolly",s:"Cat",p:"Normal",c:"bonbon"},
+    {n:"Lopez",s:"Deer",p:"Smug",c:"badoom"},
+    {n:"Louie",s:"Gorilla",p:"Jock",c:"hoo hoo ha"},
+    {n:"Lucha",s:"Bird",p:"Smug",c:"cacaw"},
+    {n:"Lucky",s:"Dog",p:"Lazy",c:"rrr-owch"},
+    {n:"Lucy",s:"Pig",p:"Normal",c:"snoooink"},
+    {n:"Lyman",s:"Koala",p:"Jock",c:"chips"},
+    {n:"Mac",s:"Dog",p:"Jock",c:"woo woof"},
+    {n:"Maddie",s:"Dog",p:"Peppy",c:"yippee"},
+    {n:"Maelle",s:"Duck",p:"Snooty",c:"duckling"},
+    {n:"Maggie",s:"Pig",p:"Normal",c:"schep"},
+    {n:"Mallary",s:"Duck",p:"Snooty",c:"quackpth"},
+    {n:"Maple",s:"Cub",p:"Normal",c:"honey"},
+    {n:"Marcel",s:"Dog",p:"Lazy",c:"non"},
+    {n:"Marcie",s:"Kangaroo",p:"Normal",c:"pouches"},
+    {n:"Margie",s:"Elephant",p:"Normal",c:"tootie"},
+    {n:"Marina",s:"Octopus",p:"Normal",c:"blurp"},
+    {n:"Marlo",s:"Hamster",p:"Cranky",c:"gabeesh"},
+    {n:"Marshal",s:"Squirrel",p:"Smug",c:"sulky"},
+    {n:"Mathilda",s:"Kangaroo",p:"Snooty",c:"wee baby"},
+    {n:"Megan",s:"Bear",p:"Normal",c:"sundae"},
+    {n:"Melba",s:"Koala",p:"Normal",c:"toasty"},
+    {n:"Merengue",s:"Rhino",p:"Normal",c:"shortcake"},
+    {n:"Merry",s:"Cat",p:"Peppy",c:"mweee"},
+    {n:"Midge",s:"Bird",p:"Normal",c:"tweedledee"},
+    {n:"Mint",s:"Squirrel",p:"Snooty",c:"ahhhhhh"},
+    {n:"Mira",s:"Rabbit",p:"Sisterly",c:"cottontail"},
+    {n:"Miranda",s:"Duck",p:"Snooty",c:"quackulous"},
+    {n:"Mitzi",s:"Cat",p:"Normal",c:"mew"},
+    {n:"Moe",s:"Cat",p:"Lazy",c:"myawn"},
+    {n:"Molly",s:"Duck",p:"Normal",c:"quackidee"},
+    {n:"Monique",s:"Cat",p:"Snooty",c:"pffffft"},
+    {n:"Monty",s:"Monkey",p:"Cranky",c:"g'tang"},
+    {n:"Moose",s:"Mouse",p:"Jock",c:"shorty"},
+    {n:"Mott",s:"Lion",p:"Jock",c:"cagey"},
+    {n:"Muffy",s:"Sheep",p:"Sisterly",c:"nightshade"},
+    {n:"Murphy",s:"Cub",p:"Cranky",c:"malarkey"},
+    {n:"Nan",s:"Goat",p:"Normal",c:"kid"},
+    {n:"Nana",s:"Monkey",p:"Normal",c:"po po"},
+    {n:"Naomi",s:"Cow",p:"Snooty",c:"moolah"},
+    {n:"Nate",s:"Bear",p:"Lazy",c:"yawwwn"},
+    {n:"Nibbles",s:"Squirrel",p:"Peppy",c:"niblet"},
+    {n:"Norma",s:"Cow",p:"Normal",c:"hoof hoo"},
+    {n:"O'Hare",s:"Rabbit",p:"Smug",c:"amigo"},
+    {n:"Octavian",s:"Octopus",p:"Cranky",c:"sucker"},
+    {n:"Olaf",s:"Anteater",p:"Smug",c:"whiffa"},
+    {n:"Olive",s:"Cub",p:"Normal",c:"sweet pea"},
+    {n:"Olivia",s:"Cat",p:"Snooty",c:"purrr"},
+    {n:"Opal",s:"Elephant",p:"Snooty",c:"snoot"},
+    {n:"Ozzie",s:"Koala",p:"Lazy",c:"ol' bear"},
+    {n:"Pancetti",s:"Pig",p:"Snooty",c:"sooey"},
+    {n:"Pango",s:"Anteater",p:"Peppy",c:"snooooof"},
+    {n:"Paolo",s:"Elephant",p:"Lazy",c:"pal"},
+    {n:"Papi",s:"Horse",p:"Lazy",c:"haaay"},
+    {n:"Pashmina",s:"Goat",p:"Sisterly",c:"kidders"},
+    {n:"Pate",s:"Duck",p:"Peppy",c:"quackle"},
+    {n:"Patty",s:"Cow",p:"Peppy",c:"how-now"},
+    {n:"Paula",s:"Bear",p:"Sisterly",c:"yodelay"},
+    {n:"Peaches",s:"Horse",p:"Normal",c:"neighbor"},
+    {n:"Peanut",s:"Squirrel",p:"Peppy",c:"slacker"},
+    {n:"Pecan",s:"Squirrel",p:"Snooty",c:"chipmunk"},
+    {n:"Peck",s:"Bird",p:"Jock",c:"crunch"},
+    {n:"Peewee",s:"Gorilla",p:"Cranky",c:"li'l dude"},
+    {n:"Peggy",s:"Pig",p:"Peppy",c:"shweetie"},
+    {n:"Pekoe",s:"Cub",p:"Normal",c:"bud"},
+    {n:"Penelope",s:"Mouse",p:"Peppy",c:"oh bow"},
+    {n:"Petri",s:"Mouse",p:"Snooty",c:"mmmhmm"},
+    {n:"Phil",s:"Ostrich",p:"Smug",c:"hurk"},
+    {n:"Phoebe",s:"Ostrich",p:"Sisterly",c:"sparky"},
+    {n:"Pierce",s:"Eagle",p:"Jock",c:"hawkeye"},
+    {n:"Pietro",s:"Sheep",p:"Smug",c:"honk honk"},
+    {n:"Pinky",s:"Bear",p:"Peppy",c:"wah"},
+    {n:"Piper",s:"Bird",p:"Peppy",c:"chickadee"},
+    {n:"Pippy",s:"Rabbit",p:"Peppy",c:"li'l hare"},
+    {n:"Plucky",s:"Chicken",p:"Sisterly",c:"chicky-poo"},
+    {n:"Pompom",s:"Duck",p:"Peppy",c:"rah rah"},
+    {n:"Poppy",s:"Squirrel",p:"Normal",c:"nutty"},
+    {n:"Portia",s:"Dog",p:"Snooty",c:"ruffian"},
+    {n:"Prince",s:"Frog",p:"Lazy",c:"burrup"},
+    {n:"Puck",s:"Penguin",p:"Lazy",c:"brrrrrrrrr"},
+    {n:"Puddles",s:"Frog",p:"Peppy",c:"splish"},
+    {n:"Punchy",s:"Cat",p:"Lazy",c:"mrmpht"},
+    {n:"Purrl",s:"Cat",p:"Snooty",c:"kitten"},
+    {n:"Queenie",s:"Ostrich",p:"Snooty",c:"chicken"},
+    {n:"Raddle",s:"Frog",p:"Lazy",c:"zzrrbbitt"},
+    {n:"Rasher",s:"Pig",p:"Cranky",c:"swine"},
+    {n:"Raymond",s:"Cat",p:"Smug",c:"crisp"},
+    {n:"Renee",s:"Rhino",p:"Sisterly",c:"yo yo yo"},
+    {n:"Rex",s:"Lion",p:"Lazy",c:"cool cat"},
+    {n:"Rhonda",s:"Rhino",p:"Normal",c:"bigfoot"},
+    {n:"Ribbot",s:"Frog",p:"Jock",c:"ribbit"},
+    {n:"Ricky",s:"Squirrel",p:"Cranky",c:"nutcase"},
+    {n:"Rizzo",s:"Mouse",p:"Cranky",c:"squee"},
+    {n:"Roald",s:"Penguin",p:"Jock",c:"b-b-buddy"},
+    {n:"Robin",s:"Bird",p:"Snooty",c:"la-di-da"},
+    {n:"Rocket",s:"Gorilla",p:"Sisterly",c:"vroom"},
+    {n:"Rod",s:"Mouse",p:"Jock",c:"ace"},
+    {n:"Rodeo",s:"Bull",p:"Lazy",c:"chaps"},
+    {n:"Rodney",s:"Hamster",p:"Smug",c:"le ham"},
+    {n:"Rolf",s:"Tiger",p:"Cranky",c:"grrrolf"},
+    {n:"Rooney",s:"Kangaroo",p:"Cranky",c:"punch"},
+    {n:"Rory",s:"Lion",p:"Jock",c:"capital"},
+    {n:"Roscoe",s:"Horse",p:"Cranky",c:"nay"},
+    {n:"Rosie",s:"Cat",p:"Peppy",c:"silly"},
+    {n:"Rowan",s:"Tiger",p:"Jock",c:"mango"},
+    {n:"Ruby",s:"Rabbit",p:"Peppy",c:"li'l ears"},
+    {n:"Rudy",s:"Cat",p:"Jock",c:"mush"},
+    {n:"Sally",s:"Squirrel",p:"Normal",c:"nutmeg"},
+    {n:"Samson",s:"Mouse",p:"Jock",c:"pipsqueak"},
+    {n:"Sandy",s:"Ostrich",p:"Normal",c:"speedy"},
+    {n:"Savannah",s:"Horse",p:"Normal",c:"y'all"},
+    {n:"Scoot",s:"Duck",p:"Jock",c:"zip zoom"},
+    {n:"Shari",s:"Monkey",p:"Sisterly",c:"cheeky"},
+    {n:"Sheldon",s:"Squirrel",p:"Jock",c:"cardio"},
+    {n:"Shep",s:"Dog",p:"Smug",c:"baafman"},
+    {n:"Sherb",s:"Goat",p:"Lazy",c:"bawwww"},
+    {n:"Simon",s:"Monkey",p:"Lazy",c:"zzzook"},
+    {n:"Skye",s:"Wolf",p:"Normal",c:"airmail"},
+    {n:"Sly",s:"Alligator",p:"Jock",c:"hoo-rah"},
+    {n:"Snake",s:"Rabbit",p:"Jock",c:"bunyip"},
+    {n:"Spike",s:"Rhino",p:"Cranky",c:"punk"},
+    {n:"Sprinkle",s:"Penguin",p:"Peppy",c:"frappe"},
+    {n:"Sprocket",s:"Ostrich",p:"Jock",c:"zort"},
+    {n:"Static",s:"Squirrel",p:"Cranky",c:"krzzt"},
+    {n:"Stella",s:"Sheep",p:"Normal",c:"baa-dabing"},
+    {n:"Sterling",s:"Eagle",p:"Jock",c:"skraaaw"},
+    {n:"Stitches",s:"Cub",p:"Lazy",c:"stuffin'"},
+    {n:"Stinky",s:"Cat",p:"Jock",c:"GAAHHH"},
+    {n:"Stu",s:"Bull",p:"Lazy",c:"moo-dude"},
+    {n:"Sydney",s:"Koala",p:"Normal",c:"sunshine"},
+    {n:"Sylvana",s:"Squirrel",p:"Normal",c:"hubbub"},
+    {n:"Sylvia",s:"Kangaroo",p:"Sisterly",c:"joey"},
+    {n:"Tabby",s:"Cat",p:"Peppy",c:"me-WOW"},
+    {n:"Tammi",s:"Monkey",p:"Peppy",c:"chimpy"},
+    {n:"Tammy",s:"Cub",p:"Sisterly",c:"ya know"},
+    {n:"Tangy",s:"Cat",p:"Peppy",c:"reeeeOWR"},
+    {n:"Tank",s:"Rhino",p:"Jock",c:"kerPOW"},
+    {n:"Tasha",s:"Squirrel",p:"Snooty",c:"nice nice"},
+    {n:"T-Bone",s:"Bull",p:"Cranky",c:"moocher"},
+    {n:"Teddy",s:"Bear",p:"Jock",c:"grooof"},
+    {n:"Tex",s:"Penguin",p:"Smug",c:"picante"},
+    {n:"Tia",s:"Elephant",p:"Normal",c:"teacup"},
+    {n:"Tiffany",s:"Rabbit",p:"Snooty",c:"bun bun"},
+    {n:"Timbra",s:"Sheep",p:"Snooty",c:"pine nut"},
+    {n:"Tipper",s:"Cow",p:"Snooty",c:"pushy"},
+    {n:"Tom",s:"Cat",p:"Cranky",c:"me-YOWZA"},
+    {n:"Tucker",s:"Elephant",p:"Lazy",c:"fuzzers"},
+    {n:"Tutu",s:"Bear",p:"Peppy",c:"twinkles"},
+    {n:"Tybalt",s:"Tiger",p:"Jock",c:"grrRAH"},
+    {n:"Velma",s:"Goat",p:"Snooty",c:"blih"},
+    {n:"Vesta",s:"Sheep",p:"Normal",c:"baaaffo"},
+    {n:"Vic",s:"Bull",p:"Cranky",c:"cud"},
+    {n:"Victoria",s:"Horse",p:"Peppy",c:"sugar cube"},
+    {n:"Violet",s:"Gorilla",p:"Snooty",c:"sweetness"},
+    {n:"Vivian",s:"Wolf",p:"Snooty",c:"piffle"},
+    {n:"Wade",s:"Penguin",p:"Lazy",c:"so it goes"},
+    {n:"Walker",s:"Dog",p:"Lazy",c:"wuh"},
+    {n:"Walt",s:"Kangaroo",p:"Cranky",c:"pockets"},
+    {n:"Weber",s:"Duck",p:"Lazy",c:"quaa"},
+    {n:"Wendy",s:"Sheep",p:"Peppy",c:"lambkins"},
+    {n:"Whitney",s:"Wolf",p:"Snooty",c:"snappy"},
+    {n:"Willow",s:"Sheep",p:"Snooty",c:"bo peep"},
+    {n:"Wolfgang",s:"Wolf",p:"Cranky",c:"snarrrl"},
+    {n:"Yuka",s:"Koala",p:"Snooty",c:"tsk tsk"},
+    {n:"Zell",s:"Deer",p:"Smug",c:"pronk"},
+    {n:"Zucker",s:"Octopus",p:"Lazy",c:"bloop"}
+];
+
+const npcs = [
+    {n:"Tom Nook",s:"Raccoon",r:"Island representative and shop owner who manages your loans and island development"},
+    {n:"Isabelle",s:"Dog",r:"Your island secretary who makes announcements and helps manage island affairs"},
+    {n:"K.K. Slider",s:"Dog",r:"Traveling musician who performs live concerts every Saturday night"},
+    {n:"Blathers",s:"Owl",r:"Museum curator who accepts donations of bugs, fish, fossils, and art"},
+    {n:"Celeste",s:"Owl",r:"Blathers' sister who visits on meteor shower nights and gives DIY recipes for star items"},
+    {n:"Timmy",s:"Raccoon",r:"One of the twin shopkeepers at Nook's Cranny (Tom Nook's nephew)"},
+    {n:"Tommy",s:"Raccoon",r:"One of the twin shopkeepers at Nook's Cranny (Tom Nook's nephew)"},
+    {n:"Mabel",s:"Hedgehog",r:"Co-owner of the Able Sisters clothing shop"},
+    {n:"Sable",s:"Hedgehog",r:"The shy seamstress at the Able Sisters who warms up to you over time"},
+    {n:"Label",s:"Hedgehog",r:"Fashion designer sister who visits your island for fashion checks"},
+    {n:"Leif",s:"Sloth",r:"Garden shop owner who sells shrubs, flower seeds, and vegetables"},
+    {n:"Kicks",s:"Skunk",r:"Traveling shoe and accessory vendor who visits your island"},
+    {n:"Redd",s:"Fox",r:"Shady art dealer who sells paintings and statues (some are forgeries)"},
+    {n:"Flick",s:"Chameleon",r:"Bug enthusiast who buys bugs at premium prices and makes bug models"},
+    {n:"C.J.",s:"Beaver",r:"Fishing enthusiast who buys fish at premium prices and commissions fish models"},
+    {n:"Pascal",s:"Otter",r:"Philosophical sea otter who trades mermaid DIY recipes for scallops"},
+    {n:"Gulliver",s:"Seagull",r:"Shipwrecked sailor who washes up on your beach and needs help finding communicator parts"},
+    {n:"Gullivarrr",s:"Seagull",r:"Pirate version of Gulliver who needs help finding his phone in the ocean"},
+    {n:"Wisp",s:"Ghost",r:"Friendly ghost who appears at night and needs help collecting his scattered spirit pieces"},
+    {n:"Daisy Mae",s:"Boar",r:"Turnip seller who visits every Sunday morning to sell turnips for the stalk market"},
+    {n:"Sahara",s:"Camel",r:"Traveling merchant who sells rugs, mysterious wallpaper, and mysterious flooring"},
+    {n:"Brewster",s:"Pigeon",r:"Runs The Roost cafe inside the museum where you can order coffee"},
+    {n:"Orville",s:"Dodo",r:"Airport operator at Dodo Airlines who handles your travel arrangements"},
+    {n:"Wilbur",s:"Dodo",r:"Pilot at Dodo Airlines who flies you to mystery islands and friends' islands"},
+    {n:"Kapp'n",s:"Kappa",r:"Boat captain who takes you on tours to mysterious islands with rare items"},
+    {n:"Harriet",s:"Poodle",r:"Hairdresser who lets you unlock new hairstyles at Harv's Island plaza"},
+    {n:"Rover",s:"Cat",r:"Traveling cat who appears during May Day events and sets up maze challenges"},
+    {n:"Zipper T. Bunny",s:"Rabbit",r:"Mysterious bunny who hosts Bunny Day and hides eggs around the island"},
+    {n:"Jack",s:"Pumpkin",r:"The czar of Halloween who appears on Halloween night for trick-or-treating"},
+    {n:"Jingle",s:"Reindeer",r:"Toy Day (Christmas) reindeer who delivers presents on December 24th"},
+    {n:"Franklin",s:"Turkey",r:"Chef who visits on Turkey Day (Thanksgiving) and needs help cooking a feast"},
+    {n:"Pave",s:"Peacock",r:"Flamboyant dancer who hosts Festivale (Carnival) and collects feathers"},
+    {n:"Lottie",s:"Otter",r:"Runs the Happy Home Paradise DLC where you design vacation homes for villagers"},
+    {n:"Wardell",s:"Manatee",r:"Works at the Happy Home Paradise office managing furniture orders and storage"},
+    {n:"Luna",s:"Tapir",r:"Dream suite operator who lets you visit other islands in dreams"}
+];
+
+const allSpecies = [...new Set(villagers.map(v => v.s))].sort();
+const allPersonalities = ["Normal","Peppy","Snooty","Sisterly","Lazy","Jock","Cranky","Smug"];
+
+const correctMessages = [
+    "Nailed it!",
+    "You got it!",
+    "That's right!",
+    "Correct!",
+    "Nice one!",
+    "Woohoo!",
+    "You know your villagers!",
+    "Perfect!",
+    "Absolutely right!",
+    "Gold star!"
+];
+
+const wrongMessages = [
+    "Not quite!",
+    "Oops!",
+    "Close, but no...",
+    "Good guess, but...",
+    "Not this time!",
+    "Almost!"
+];
+
+let currentMode = 'mix';
+let score = 0;
+let total = 0;
+let streak = 0;
+let best = 0;
+let answered = false;
+
+function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function pick(arr, n, exclude) {
+    const filtered = exclude ? arr.filter(x => x !== exclude) : [...arr];
+    return shuffle(filtered).slice(0, n);
+}
+
+function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    event.target.closest('.mode-btn').classList.add('active');
+    nextQuestion();
+}
+
+function generateSpeciesQuestion() {
+    const v = pickRandom(villagers);
+    const wrongSpecies = pick(allSpecies, 3, v.s);
+    const options = shuffle([v.s, ...wrongSpecies]);
+    return {
+        label: "Guess the Species",
+        text: `What species is <span class="highlight">${v.n}</span>?`,
+        options: options,
+        answer: v.s,
+        fact: `${v.n} is a ${v.s} with a ${v.p} personality!`
+    };
+}
+
+function generatePersonalityQuestion() {
+    const v = pickRandom(villagers);
+    const wrongP = pick(allPersonalities, 3, v.p);
+    const options = shuffle([v.p, ...wrongP]);
+    return {
+        label: "Guess the Personality",
+        text: `What is <span class="highlight">${v.n}</span> the ${v.s}'s personality type?`,
+        options: options,
+        answer: v.p,
+        fact: `${v.n}'s catchphrase is "${v.c}"!`
+    };
+}
+
+function generateCatchphraseQuestion() {
+    const v = pickRandom(villagers);
+    const wrongCatch = pick(villagers, 3, v).map(x => x.c);
+    const options = shuffle([v.c, ...wrongCatch]);
+    return {
+        label: "Name That Catchphrase",
+        text: `What is <span class="highlight">${v.n}</span> the ${v.s}'s catchphrase?`,
+        options: options.map(o => `"${o}"`),
+        answer: `"${v.c}"`,
+        fact: `${v.n} is a ${v.p} ${v.s}!`
+    };
+}
+
+function generateWhoAmIQuestion() {
+    const v = pickRandom(villagers);
+    const wrongNames = pick(villagers, 3, v).map(x => x.n);
+    const options = shuffle([v.n, ...wrongNames]);
+    return {
+        label: "Who Am I?",
+        text: `I'm a <span class="highlight">${v.s}</span> with a <span class="highlight">${v.p}</span> personality. My catchphrase is <span class="highlight">"${v.c}"</span>. Who am I?`,
+        options: options,
+        answer: v.n,
+        fact: `It's ${v.n}!`
+    };
+}
+
+function generateNPCQuestion() {
+    const type = Math.random() < 0.5 ? 'role' : 'species';
+    const npc = pickRandom(npcs);
+
+    if (type === 'role') {
+        const wrongNPCs = pick(npcs, 3, npc);
+        const options = shuffle([npc.n, ...wrongNPCs.map(n => n.n)]);
+        // Truncate role for display
+        const shortRole = npc.r.length > 100 ? npc.r.substring(0, 100) + '...' : npc.r;
+        return {
+            label: "Special Character",
+            text: `Who is this? <span class="highlight">${shortRole}</span>`,
+            options: options,
+            answer: npc.n,
+            fact: `${npc.n} is a ${npc.s}!`
+        };
+    } else {
+        const npcSpecies = [...new Set(npcs.map(n => n.s))];
+        const wrongSpecies = pick(npcSpecies, 3, npc.s);
+        // Pad with villager species if not enough NPC species
+        while (wrongSpecies.length < 3) {
+            const sp = pickRandom(allSpecies);
+            if (sp !== npc.s && !wrongSpecies.includes(sp)) wrongSpecies.push(sp);
+        }
+        const options = shuffle([npc.s, ...wrongSpecies.slice(0, 3)]);
+        return {
+            label: "Special Character",
+            text: `What species is <span class="highlight">${npc.n}</span>?`,
+            options: options,
+            answer: npc.s,
+            fact: `${npc.n} (${npc.s}): ${npc.r.substring(0, 80)}...`
+        };
+    }
+}
+
+function generateQuestion() {
+    if (currentMode === 'species') return generateSpeciesQuestion();
+    if (currentMode === 'personality') return generatePersonalityQuestion();
+    if (currentMode === 'catchphrase') return generateCatchphraseQuestion();
+    if (currentMode === 'whoareyou') return generateWhoAmIQuestion();
+    if (currentMode === 'npc') return generateNPCQuestion();
+    // mix
+    const generators = [
+        generateSpeciesQuestion,
+        generatePersonalityQuestion,
+        generateCatchphraseQuestion,
+        generateWhoAmIQuestion,
+        generateNPCQuestion
+    ];
+    return pickRandom(generators)();
+}
+
+function nextQuestion() {
+    answered = false;
+    const q = generateQuestion();
+
+    document.getElementById('q-label').textContent = q.label;
+    document.getElementById('q-text').innerHTML = q.text;
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('next-btn').style.display = 'none';
+    document.getElementById('streak-msg').textContent = '';
+
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = '';
+
+    q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = opt;
+        btn.onclick = () => handleAnswer(btn, opt, q);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function handleAnswer(btn, selected, q) {
+    if (answered) return;
+    answered = true;
+    total++;
+
+    const isCorrect = selected === q.answer;
+    const feedback = document.getElementById('feedback');
+    const buttons = document.querySelectorAll('.option-btn');
+
+    buttons.forEach(b => {
+        b.classList.add('disabled');
+        if (b.textContent === q.answer) {
+            b.classList.add('correct');
+        }
+    });
+
+    if (isCorrect) {
+        score++;
+        streak++;
+        if (streak > best) best = streak;
+        btn.classList.add('correct');
+        feedback.className = 'feedback correct';
+        feedback.innerHTML = pickRandom(correctMessages);
+        if (q.fact) feedback.innerHTML += `<div class="fun-fact">${q.fact}</div>`;
+    } else {
+        streak = 0;
+        btn.classList.add('wrong');
+        feedback.className = 'feedback wrong';
+        feedback.innerHTML = `${pickRandom(wrongMessages)} The answer was <strong>${q.answer}</strong>.`;
+        if (q.fact) feedback.innerHTML += `<div class="fun-fact">${q.fact}</div>`;
+    }
+
+    document.getElementById('score').textContent = score;
+    document.getElementById('total').textContent = total;
+    document.getElementById('streak').textContent = streak;
+    document.getElementById('best').textContent = best;
+    document.getElementById('next-btn').style.display = 'block';
+
+    if (streak >= 5) {
+        const msgs = ["You're on fire!", "Unstoppable!", "Amazing streak!", "Keep going!", "Incredible run!"];
+        document.getElementById('streak-msg').textContent = `🔥 ${streak} in a row! ${pickRandom(msgs)}`;
+    } else if (streak >= 3) {
+        document.getElementById('streak-msg').textContent = `✨ ${streak} in a row! Nice!`;
+    }
+}
+
+// Start with first question
+nextQuestion();
+    </script>
+</body>
+</html>
